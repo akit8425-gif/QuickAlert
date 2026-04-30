@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,70 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function Signup() {
   const router = useRouter();
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async () => {
+    setMessage("");
+    setMessageType("");
+
+    if (!fullName || !email || !password || !confirmPassword) {
+      setMessage("All fields are required");
+      setMessageType("error");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match");
+      setMessageType("error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("http://192.168.1.21:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName,
+          email,
+          password,
+          confirmPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Signup failed");
+        setMessageType("error");
+        return;
+      }
+
+      setMessage(data.message || "Signup successful");
+      setMessageType("success");
+
+      setTimeout(() => {
+        router.push("/Login");
+      }, 700);
+    } catch (error) {
+      setMessage("Backend se connection nahi ho pa raha");
+      setMessageType("error");
+      console.log("Signup Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ImageBackground
@@ -36,6 +100,8 @@ export default function Signup() {
               placeholder="Full Name"
               placeholderTextColor="#aaa"
               style={styles.input}
+              value={fullName}
+              onChangeText={setFullName}
             />
           </View>
 
@@ -45,7 +111,10 @@ export default function Signup() {
               placeholder="Email"
               placeholderTextColor="#aaa"
               keyboardType="email-address"
+              autoCapitalize="none"
               style={styles.input}
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -56,6 +125,8 @@ export default function Signup() {
               placeholderTextColor="#aaa"
               secureTextEntry
               style={styles.input}
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
 
@@ -66,14 +137,30 @@ export default function Signup() {
               placeholderTextColor="#aaa"
               secureTextEntry
               style={styles.input}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
             />
           </View>
 
+          {message ? (
+            <Text
+              style={[
+                styles.messageText,
+                messageType === "success" ? styles.successText : styles.errorText,
+              ]}
+            >
+              {message}
+            </Text>
+          ) : null}
+
           <TouchableOpacity
-            style={styles.signupBtn}
-            onPress={() => router.push("/Login")}
+            style={[styles.signupBtn, loading && styles.disabledBtn]}
+            onPress={handleSignup}
+            disabled={loading}
           >
-            <Text style={styles.signupText}>Sign Up</Text>
+            <Text style={styles.signupText}>
+              {loading ? "Signing up..." : "Sign Up"}
+            </Text>
           </TouchableOpacity>
 
           <Text style={styles.or}>OR</Text>
@@ -153,13 +240,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
+  messageText: {
+    textAlign: "center",
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+
+  errorText: {
+    color: "#ff4d4d",
+  },
+
+  successText: {
+    color: "#00FF99",
+  },
+
   signupBtn: {
     backgroundColor: "#00C853",
     height: 49,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: 5,
+  },
+
+  disabledBtn: {
+    opacity: 0.6,
   },
 
   signupText: {
