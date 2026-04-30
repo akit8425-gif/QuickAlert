@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,28 +8,49 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const savedUser = await AsyncStorage.getItem("user");
+
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    };
+
+    getUserData();
+  }, []);
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
+
+    router.replace("/Login");
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#050B12" />
 
-      {/* Watermark */}
-      <Text style={styles.watermark}>ONLY FRONTEND</Text>
+      <Text style={styles.watermark}>DYNAMIC PROFILE</Text>
 
-      {/* Profile Header */}
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Ionicons name="person" size={40} color="#DFFFE8" />
         </View>
 
         <View>
-          <Text style={styles.name}>User_01</Text>
-          <Text style={styles.phone}>+91 98765 43210</Text>
+          <Text style={styles.name}>{user?.fullName || "User"}</Text>
+          <Text style={styles.phone}>{user?.email || "No email found"}</Text>
         </View>
       </View>
 
-      {/* Menu */}
       <View style={styles.menuBox}>
         <MenuItem icon="person-circle-outline" label="My Information" />
         <MenuItem icon="settings-outline" label="App Settings" />
@@ -38,17 +59,19 @@ export default function ProfileScreen() {
         <MenuItem icon="information-circle-outline" label="About App" />
       </View>
 
-      {/* Logout */}
-      <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        activeOpacity={0.8}
+        onPress={handleLogout}
+      >
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
 
-      {/* Bottom Nav */}
       <View style={styles.bottomNav}>
-        <NavItem icon="home" label="Home" />
-        <NavItem icon="chatbox-ellipses" label="Messages" />
-        <NavItem icon="map" label="Map" />
-        <NavItem icon="notifications" label="Alerts" />
+        <NavItem icon="home" label="Home" onPress={() => router.push("/Home")} />
+        <NavItem icon="chatbox-ellipses" label="Messages" onPress={() => router.push("/MessagesScreen")} />
+        <NavItem icon="map" label="Map" onPress={() => router.push("/MapScreen")} />
+        <NavItem icon="notifications" label="Alerts" onPress={() => router.push("/EmergencyAlertScreen")} />
         <NavItem icon="person" label="Profile" active />
       </View>
     </SafeAreaView>
@@ -71,9 +94,9 @@ function MenuItem({ icon, label, extra }) {
   );
 }
 
-function NavItem({ icon, label, active }) {
+function NavItem({ icon, label, active, onPress }) {
   return (
-    <TouchableOpacity style={styles.navItem}>
+    <TouchableOpacity style={styles.navItem} onPress={onPress}>
       <Ionicons
         name={icon}
         size={24}

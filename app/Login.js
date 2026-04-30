@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const router = useRouter();
@@ -59,6 +60,8 @@ export default function Login() {
         return;
       }
 
+      console.log("🔥 API Response 👉", data);
+
       if (!response.ok) {
         setMessage(data.message || "Login failed");
         setMessageType("error");
@@ -67,6 +70,20 @@ export default function Login() {
 
       setMessage(data.message || "Login successful");
       setMessageType("success");
+
+      if (data.token) {
+        await AsyncStorage.setItem("token", data.token);
+      }
+
+      if (data.user) {
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      const savedToken = await AsyncStorage.getItem("token");
+      const savedUser = await AsyncStorage.getItem("user");
+
+      console.log("✅ Saved Token 👉", savedToken);
+      console.log("✅ Saved User 👉", savedUser);
 
       setTimeout(() => {
         router.push("/Home");

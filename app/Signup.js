@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Signup() {
   const router = useRouter();
@@ -22,128 +23,86 @@ export default function Signup() {
   const [messageType, setMessageType] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // const handleSignup = async () => {
-  //   setMessage("");
-  //   setMessageType("");
-
-  //   if (!fullName || !email || !password || !confirmPassword) {
-  //     setMessage("All fields are required");
-  //     setMessageType("error");
-  //     return;
-  //   }
-
-  //   if (password !== confirmPassword) {
-  //     setMessage("Passwords do not match");
-  //     setMessageType("error");
-  //     return;
-  //   }
-
-  //   try {
-  //     setLoading(true);
-
-  //     const response = await fetch("http://192.168.1.21:5000/api/auth/signup", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         fullName,
-  //         email,
-  //         password,
-  //         confirmPassword,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       setMessage(data.message || "Signup failed");
-  //       setMessageType("error");
-  //       return;
-  //     }
-
-  //     setMessage(data.message || "Signup successful");
-  //     setMessageType("success");
-
-  //     setTimeout(() => {
-  //       router.push("/Login");
-  //     }, 700);
-  //   } catch (error) {
-  //     setMessage("Backend se connection nahi ho pa raha");
-  //     setMessageType("error");
-  //     console.log("Signup Error:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const API_URL = "http://192.168.1.21:5000/api/auth/signup";
 
-const handleSignup = async () => {
-  setMessage("");
-  setMessageType("");
+  const handleSignup = async () => {
+    setMessage("");
+    setMessageType("");
 
-  if (!fullName || !email || !password || !confirmPassword) {
-    setMessage("All fields are required");
-    setMessageType("error");
-    return;
-  }
+    if (!fullName || !email || !password || !confirmPassword) {
+      setMessage("All fields are required");
+      setMessageType("error");
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    setMessage("Passwords do not match");
-    setMessageType("error");
-    return;
-  }
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match");
+      setMessageType("error");
+      return;
+    }
 
-  try {
-    setLoading(true);
-
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        fullName,
-        email,
-        password,
-        confirmPassword,
-      }),
-    });
-
-    const text = await response.text();
-
-    let data = {};
     try {
-      data = text ? JSON.parse(text) : {};
-    } catch (err) {
-      console.log("Backend ne JSON nahi bheja:", text);
-      setMessage("Backend JSON nahi bhej raha. Route/server check karo.");
+      setLoading(true);
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          fullName,
+          email,
+          password,
+          confirmPassword,
+        }),
+      });
+
+      const text = await response.text();
+
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        console.log("Backend ne JSON nahi bheja:", text);
+        setMessage("Backend JSON nahi bhej raha. Route/server check karo.");
+        setMessageType("error");
+        return;
+      }
+
+      if (!response.ok) {
+        setMessage(data.message || "Signup failed");
+        setMessageType("error");
+        return;
+      }
+
+      setMessage(data.message || "Signup successful");
+      setMessageType("success");
+
+      if (data.token) {
+        await AsyncStorage.setItem("token", data.token);
+      }
+
+      if (data.user) {
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+        // ✅ YAHAN CHECK KARO
+const token = await AsyncStorage.getItem("token");
+console.log("Saved Token 👉", token);
+
+      setTimeout(() => {
+        router.push("/Login");
+      }, 700);
+    } catch (error) {
+      console.log("Signup Error:", error);
+      setMessage("Network error: IP/server/port/firewall check karo");
       setMessageType("error");
-      return;
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (!response.ok) {
-      setMessage(data.message || "Signup failed");
-      setMessageType("error");
-      return;
-    }
-
-    setMessage(data.message || "Signup successful");
-    setMessageType("success");
-
-    setTimeout(() => {
-      router.push("/Login");
-    }, 700);
-  } catch (error) {
-    console.log("Signup Error:", error);
-    setMessage("Network error: IP/server/port/firewall check karo");
-    setMessageType("error");
-  } finally {
-    setLoading(false);
-  }
-};
   return (
     <ImageBackground
       source={require("../assets/bg.png")}
@@ -213,7 +172,9 @@ const handleSignup = async () => {
             <Text
               style={[
                 styles.messageText,
-                messageType === "success" ? styles.successText : styles.errorText,
+                messageType === "success"
+                  ? styles.successText
+                  : styles.errorText,
               ]}
             >
               {message}
