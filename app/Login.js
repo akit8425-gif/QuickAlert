@@ -74,10 +74,10 @@ export default function Login() {
         </TouchableOpacity>
 
         {/* Signup Redirect */}
-        <TouchableOpacity onPress={() => router.push('/Signup')}>
+        <TouchableOpacity onPress={() => router.push('./Signup')}>
           <Text style={styles.signup}>
             Don’t have an account?{' '}
-            <Text style={{ color: '#00FF99' }}>Sign Up</Text>
+            <Text style={{ color: '#00FF99' }}>SignUp</Text>
           </Text>
         </TouchableOpacity>
 

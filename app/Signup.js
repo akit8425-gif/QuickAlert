@@ -1,181 +1,208 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
-  StatusBar,
+  ImageBackground,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function NewMessageScreen() {
-  const [type, setType] = useState("Emergency");
-  const [message, setMessage] = useState("");
+export default function Signup() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <ImageBackground
+      source={require("../assets/bg.png")}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={28} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
-      {/* 🔥 HEADER FIXED */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back-ios-new" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.formBox}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Sign up to get started</Text>
 
-        <Text style={styles.title}>New Message</Text>
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={20} color="#aaa" />
+            <TextInput
+              placeholder="Full Name"
+              placeholderTextColor="#aaa"
+              style={styles.input}
+            />
+          </View>
 
-        <View style={{ width: 24 }} />
+          <View style={styles.inputContainer}>
+            <Ionicons name="mail-outline" size={20} color="#aaa" />
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor="#aaa"
+              keyboardType="email-address"
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={20} color="#aaa" />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor="#aaa"
+              secureTextEntry
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#aaa" />
+            <TextInput
+              placeholder="Confirm Password"
+              placeholderTextColor="#aaa"
+              secureTextEntry
+              style={styles.input}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.signupBtn}
+            onPress={() => router.push("/Login")}
+          >
+            <Text style={styles.signupText}>Sign Up</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.or}>OR</Text>
+
+          <TouchableOpacity style={styles.googleBtn}>
+            <Ionicons name="logo-google" size={20} color="#fff" />
+            <Text style={styles.socialText}>Continue with Google</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.fbBtn}>
+            <Ionicons name="logo-facebook" size={20} color="#fff" />
+            <Text style={styles.socialText}>Continue with Facebook</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push("/Login")}>
+            <Text style={styles.loginLink}>
+              Already have an account?{" "}
+              <Text style={{ color: "#00FF99" }}>Login</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-
-      {/* CARD */}
-      <View style={styles.card}>
-
-        <Text style={styles.label}>To:</Text>
-        <View style={styles.inputBox}>
-          <Text style={styles.highlight}>All Nearby</Text>
-        </View>
-
-        <Text style={styles.label}>Message Type</Text>
-        <View style={styles.row}>
-          {["Emergency", "Normal", "Info"].map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={[
-                styles.typeBtn,
-                type === item && styles.activeBtn,
-              ]}
-              onPress={() => setType(item)}
-            >
-              <Text
-                style={[
-                  styles.typeText,
-                  type === item && styles.activeText,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.label}>Message</Text>
-        <View style={styles.textArea}>
-          <TextInput
-            placeholder="Type your message..."
-            placeholderTextColor="#888"
-            multiline
-            value={message}
-            onChangeText={setMessage}
-            style={styles.input}
-          />
-        </View>
-
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.btnText}>Send Message</Text>
-        </TouchableOpacity>
-
-      </View>
-    </SafeAreaView>
+    </ImageBackground>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B0F14",
+  },
+
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.78)",
+    paddingHorizontal: 25,
   },
 
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    paddingBottom: 10,
-    backgroundColor: "#0B0F14", // 👈 important
-    zIndex: 10, // 👈 ensures visible
+    position: "absolute",
+    top: 50,
+    left: 22,
+    zIndex: 10,
+  },
+
+  formBox: {
+    flex: 1,
+    justifyContent: "center",
   },
 
   title: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 28,
     fontWeight: "bold",
   },
 
-  card: {
-    backgroundColor: "#111720",
-    margin: 15,
-    padding: 15,
-    borderRadius: 20,
-  },
-
-  label: {
+  subtitle: {
     color: "#aaa",
-    marginTop: 10,
-    marginBottom: 5,
+    fontSize: 15,
+    marginTop: 4,
+    marginBottom: 30,
   },
 
-  inputBox: {
-    backgroundColor: "#1a2330",
-    padding: 12,
-    borderRadius: 10,
-  },
-
-  highlight: {
-    color: "#4ade80",
-    fontWeight: "bold",
-  },
-
-  row: {
+  inputContainer: {
     flexDirection: "row",
-    gap: 10,
-  },
-
-  typeBtn: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: "#1a2330",
-    borderRadius: 10,
     alignItems: "center",
-  },
-
-  activeBtn: {
-    borderWidth: 1,
-    borderColor: "#ff4d4d",
-  },
-
-  typeText: {
-    color: "#aaa",
-  },
-
-  activeText: {
-    color: "#ff4d4d",
-  },
-
-  textArea: {
-    backgroundColor: "#1a2330",
+    backgroundColor: "#1c1c1c",
     borderRadius: 10,
-    padding: 10,
-    height: 100,
+    paddingHorizontal: 12,
+    marginBottom: 14,
+    height: 42,
   },
 
   input: {
+    flex: 1,
     color: "#fff",
+    paddingHorizontal: 10,
+    fontSize: 14,
   },
 
-  button: {
-    marginTop: 20,
-    backgroundColor: "#22c55e",
-    padding: 15,
-    borderRadius: 12,
+  signupBtn: {
+    backgroundColor: "#00C853",
+    height: 49,
+    borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
   },
 
-  btnText: {
+  signupText: {
     color: "#fff",
     fontWeight: "bold",
+    fontSize: 15,
+  },
+
+  or: {
+    color: "#aaa",
+    textAlign: "center",
+    marginVertical: 15,
+  },
+
+  googleBtn: {
+    flexDirection: "row",
+    backgroundColor: "#DB4437",
+    height: 48,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 10,
+  },
+
+  fbBtn: {
+    flexDirection: "row",
+    backgroundColor: "#1877F2",
+    height: 48,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+
+  socialText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  loginLink: {
+    color: "#aaa",
+    textAlign: "center",
+    marginTop: 22,
   },
 });

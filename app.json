@@ -1,5 +1,3 @@
-
-
 {
   "expo": {
     "name": "QuickAlert",
@@ -38,7 +36,6 @@
 
     "plugins": [
       "expo-router",
-
       [
         "expo-splash-screen",
         {
@@ -49,13 +46,6 @@
           "dark": {
             "backgroundColor": "#000000"
           }
-        }
-      ],
-
-      [
-        "@react-native-voice/voice",
-        {
-          "microphonePermission": "Allow QuickAlert to access microphone"
         }
       ]
     ],
