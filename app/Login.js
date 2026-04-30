@@ -1,4 +1,4 @@
- import React from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,43 +6,109 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Login() {
   const router = useRouter();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = "http://192.168.1.21:5000/api/auth/login";
+
+  const handleLogin = async () => {
+    setMessage("");
+    setMessageType("");
+
+    if (!email || !password) {
+      setMessage("Email and password are required");
+      setMessageType("error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const text = await response.text();
+
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        console.log("Backend ne JSON nahi bheja:", text);
+        setMessage("Backend JSON nahi bhej raha. Route/server check karo.");
+        setMessageType("error");
+        return;
+      }
+
+      if (!response.ok) {
+        setMessage(data.message || "Login failed");
+        setMessageType("error");
+        return;
+      }
+
+      setMessage(data.message || "Login successful");
+      setMessageType("success");
+
+      setTimeout(() => {
+        router.push("/Home");
+      }, 700);
+    } catch (error) {
+      console.log("Login Error:", error);
+      setMessage("Network error: IP/server/port/firewall check karo");
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ImageBackground
-      source={require('../assets/bg.png')}
+      source={require("../assets/bg.png")}
       style={styles.container}
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-
-        {/* 🔙 Back Button */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={26} color="#fff" />
           </TouchableOpacity>
         </View>
 
-        {/* Title */}
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Login to continue</Text>
 
-        {/* Email */}
         <View style={styles.inputContainer}>
           <Ionicons name="mail-outline" size={20} color="#aaa" />
           <TextInput
             placeholder="Email"
             placeholderTextColor="#aaa"
+            keyboardType="email-address"
+            autoCapitalize="none"
             style={styles.input}
+            value={email}
+            onChangeText={setEmail}
           />
         </View>
 
-        {/* Password */}
         <View style={styles.inputContainer}>
           <Ionicons name="lock-closed-outline" size={20} color="#aaa" />
           <TextInput
@@ -50,37 +116,50 @@ export default function Login() {
             placeholderTextColor="#aaa"
             secureTextEntry
             style={styles.input}
+            value={password}
+            onChangeText={setPassword}
           />
         </View>
 
-        {/* Login Button */}
-        <TouchableOpacity style={styles.loginBtn}>
-          <Text style={styles.loginText}>Login</Text>
+        {message ? (
+          <Text
+            style={[
+              styles.messageText,
+              messageType === "success" ? styles.successText : styles.errorText,
+            ]}
+          >
+            {message}
+          </Text>
+        ) : null}
+
+        <TouchableOpacity
+          style={[styles.loginBtn, loading && styles.disabledBtn]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.loginText}>
+            {loading ? "Logging in..." : "Login"}
+          </Text>
         </TouchableOpacity>
 
-        {/* Divider */}
         <Text style={styles.or}>OR</Text>
 
-        {/* Google Login */}
         <TouchableOpacity style={styles.googleBtn}>
           <Ionicons name="logo-google" size={20} color="#fff" />
           <Text style={styles.socialText}>Continue with Google</Text>
         </TouchableOpacity>
 
-        {/* Facebook Login */}
         <TouchableOpacity style={styles.fbBtn}>
           <Ionicons name="logo-facebook" size={20} color="#fff" />
           <Text style={styles.socialText}>Continue with Facebook</Text>
         </TouchableOpacity>
 
-        {/* Signup Redirect */}
-        <TouchableOpacity onPress={() => router.push('./Signup')}>
+        <TouchableOpacity onPress={() => router.push("/Signup")}>
           <Text style={styles.signup}>
-            Don’t have an account?{' '}
-            <Text style={{ color: '#00FF99' }}>SignUp</Text>
+            Don’t have an account?{" "}
+            <Text style={{ color: "#00FF99" }}>SignUp</Text>
           </Text>
         </TouchableOpacity>
-
       </View>
     </ImageBackground>
   );
@@ -93,33 +172,33 @@ const styles = StyleSheet.create({
 
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: "rgba(0,0,0,0.75)",
     padding: 25,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
 
   header: {
-    position: 'absolute',
+    position: "absolute",
     top: 50,
     left: 20,
     zIndex: 10,
   },
 
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   subtitle: {
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 30,
   },
 
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1c1c1c',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1c1c1c",
     borderRadius: 10,
     paddingHorizontal: 10,
     marginBottom: 15,
@@ -127,58 +206,76 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    color: '#fff',
+    color: "#fff",
     padding: 12,
   },
 
+  messageText: {
+    textAlign: "center",
+    marginBottom: 10,
+    fontWeight: "600",
+  },
+
+  errorText: {
+    color: "#ff4d4d",
+  },
+
+  successText: {
+    color: "#00FF99",
+  },
+
   loginBtn: {
-    backgroundColor: '#00C853',
+    backgroundColor: "#00C853",
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
 
+  disabledBtn: {
+    opacity: 0.6,
+  },
+
   loginText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
 
   or: {
-    color: '#aaa',
-    textAlign: 'center',
+    color: "#aaa",
+    textAlign: "center",
     marginVertical: 15,
   },
 
   googleBtn: {
-    flexDirection: 'row',
-    backgroundColor: '#DB4437',
+    flexDirection: "row",
+    backgroundColor: "#DB4437",
     padding: 14,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 10,
     gap: 10,
   },
 
   fbBtn: {
-    flexDirection: 'row',
-    backgroundColor: '#1877F2',
+    flexDirection: "row",
+    backgroundColor: "#1877F2",
     padding: 14,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 10,
   },
 
   socialText: {
-    color: '#fff',
-    fontWeight: '500',
+    color: "#fff",
+    fontWeight: "500",
   },
 
   signup: {
-    color: '#aaa',
-    textAlign: 'center',
+    color: "#aaa",
+    textAlign: "center",
     marginTop: 20,
   },
 });
